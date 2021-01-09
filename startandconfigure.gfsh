@@ -1,0 +1,35 @@
+# Start locator
+start locator --name=locator --J=-Dgemfire.distributed-system-id=1
+
+# Set screen width
+set variable --name=APP_RESULT_VIEWER --value=any
+
+# Configure PDX
+configure pdx --read-serialized=true
+
+# Start Servers
+start server --name=server-1 --server-port=0 --initial-heap=2g --max-heap=2g --statistic-archive-file=cacheserver.gfs --J=-Dgemfire.log-file=cacheserver.log --J=-Dgemfire.conserve-sockets=false
+start server --name=server-2 --server-port=0 --initial-heap=2g --max-heap=2g --statistic-archive-file=cacheserver.gfs --J=-Dgemfire.log-file=cacheserver.log --J=-Dgemfire.conserve-sockets=false
+start server --name=server-3 --server-port=0 --initial-heap=2g --max-heap=2g --statistic-archive-file=cacheserver.gfs --J=-Dgemfire.log-file=cacheserver.log --J=-Dgemfire.conserve-sockets=false
+
+# List Members
+list members
+
+# Create Gateway Senders
+create gateway-sender --id=ny --remote-distributed-system-id=2 --parallel=true
+create gateway-sender --id=nyserial --remote-distributed-system-id=2 --parallel=false
+
+# Sleep to enable Gateway Senders to be known by the locator through JMX
+sleep --time=5
+
+# Create Regions
+create region --name=Trade --type=PARTITION_REDUNDANT --gateway-sender-id=ny,nyserial
+
+# List Regions
+list regions
+
+# Deploy Functions
+deploy --jar=server/build/libs/server-0.0.1-SNAPSHOT.jar
+
+# List Functions
+list functions
